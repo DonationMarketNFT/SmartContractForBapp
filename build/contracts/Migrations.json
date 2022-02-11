@@ -867,12 +867,12 @@
     "1337": {
       "events": {},
       "links": {},
-      "address": "0xC66340154a7289B96F0fD5E199C4E61579B2Ac2a",
-      "transactionHash": "0x063f306c0896fc8865819609699f8a4ae16d8f1568e9fc130c5b94a312fd6fbf"
+      "address": "0x6133DA5EB2d6Fb4CBb208D7788491212651BbBa6",
+      "transactionHash": "0x06b66a084e478939099f01725186bb065e12e56415fe2f4a49d6df47506b199c"
     }
   },
   "schemaVersion": "3.0.14",
-  "updatedAt": "2022-02-10T14:22:25.007Z",
+  "updatedAt": "2022-02-11T07:03:39.804Z",
   "devdoc": {
     "methods": {}
   },
