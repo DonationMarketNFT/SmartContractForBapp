@@ -1,6 +1,6 @@
 const Migrations = artifacts.require("./Migrations.sol");
-const KlaytnGreeter = artifacts.require("./KlaytnGreeter.sol");
+const NFTSimple = artifacts.require("./NFTSimple.sol");
 module.exports = function (deployer) {
   deployer.deploy(Migrations);
-  deployer.deploy(KlaytnGreeter, "Hello, Klaytn");
+  deployer.deploy(NFTSimple, "Hello, Klaytn");
 };
