@@ -950,3 +950,80 @@ TypeError [ERR_INVALID_REPL_INPUT]: Listeners for `uncaughtException` cannot be 
 
 현재 TypeErr가 나서 정상적으로 결과가 나오지는 않았습니다. <br/>
 해당 부분은 확인 후 수정 예정이므로 해당 과정만 참고 바랍니다.
+
+<br/>
+
+### 상기 오류 부분 수정
+
+truffle 버전을 truffle@nodeLTS로 변경해주시면 test가 정상적으로 수행됩니다.
+
+```bashshell
+npm un -g truffle
+npm i -g truffle@nodeLTS
+```
+
+이전에 수행하려던 test를 다시 수행하면
+
+#### test code
+
+```javascript
+//Klaytn IDE uses solidity 0.4.24 0.5.6 versions.
+pragma solidity >=0.4.24 <=0.5.6;
+
+import "truffle/Assert.sol";
+import "truffle/DeployedAddresses.sol";
+import "../contracts/NFTSimple.sol";
+
+contract TestSimpleStorage{
+    function testSimpleStorage() public {
+
+        NFTSimple it = new NFTSimple();
+
+        it.mintWithTokenURI(address(this), 20, "happy");
+        uint256 ans = it.balanceOf(address(this));
+        Assert.equal(ans, 1, "value equal test");
+    }
+}
+```
+
+코드에서 보다시피 배포한 주소에 1개의 토큰을 mint하고 다시 해당 주소에 대해 balanceOf를 호출한 값과
+결과를 비교하게 됩니다.
+
+예상하다시피 1이 나와야 합니다.
+
+```bashshell
+truffle(ganache)> test
+Using network 'ganache'.
+
+
+Compiling your contracts...
+===========================
+> Compiling ./test/TestSimpleStorage.sol
+> Compilation warnings encountered:
+
+    /Users/kimdawoon/klaytn/contracts/NFTSimple.sol:40:2: Warning: Variable is shadowed in inline assembly by an instruction of the same name
+ function balance (address _addr) public view returns(uint){
+ ^ (Relevant source part starts here and spans across multiple lines).
+,/Users/kimdawoon/klaytn/contracts/NFTSimple.sol:140:30: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+    function onKIP17Received(address operator, address from , uint256 tokenId, bytes memory data) public returns (bytes4) {
+                             ^--------------^
+,/Users/kimdawoon/klaytn/contracts/NFTSimple.sol:140:80: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+    function onKIP17Received(address operator, address from , uint256 tokenId, bytes memory data) public returns (bytes4) {
+                                                                               ^---------------^
+
+> Artifacts written to /tmp/test-2022113-8636-1qrqaru.3vqu
+> Compiled successfully using:
+   - solc: 0.5.6+commit.b259423e.Emscripten.clang
+
+
+
+  TestSimpleStorage
+    ✓ testSimpleStorage (166ms)
+
+
+  1 passing (7s)
+
+
+```
+
+예상했다시피 test를 통과하고 passing된 결과가 나오게 됩니다.
