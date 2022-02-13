@@ -12,6 +12,6 @@ contract TestSimpleStorage{
 
         it.mintWithTokenURI(address(this), 20, "happy");
         uint256 ans = it.balanceOf(address(this));
-        Assert.equal(ans, 3, "value equal test");
+        Assert.equal(ans, 1, "value equal test");
     }
 }

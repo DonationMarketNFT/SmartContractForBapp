@@ -10,6 +10,6 @@
   "license": "ISC",
   "dependencies": {
     "caver-js": "^1.6.7",
-    "truffle": "^4.1.15"
+    "truffle": "^5.1.14-nodeLTS.0"
   }
 }
