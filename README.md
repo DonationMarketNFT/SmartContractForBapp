@@ -874,3 +874,79 @@ BN { negative: 0, words: [ 2, <1 empty item> ], length: 1, red: null }
 ```
 
 정상적으로 tokenId 2가 생성되고 balanceOf로 확인 시 2개의 token이 할당 됨을 볼 수 있습니다.
+
+<br/>
+
+### Test Code 작성
+
+```bashshell
+./test/TestSimpleStorage.sol
+```
+
+상기 경로 내에 예제 Test Code를 작성했습니다.
+
+기본적인 포멧은 해당 코드와 같습니다.
+
+```javascript
+//Klaytn IDE uses solidity 0.4.24 0.5.6 versions.
+pragma solidity >=0.4.24 <=0.5.6;
+
+import "truffle/Assert.sol";
+import "truffle/DeployedAddresses.sol";
+import "../contracts/NFTSimple.sol";
+
+contract TestSimpleStorage{
+    function testSimpleStorage() public {
+
+        NFTSimple it = new NFTSimple();
+
+        it.mintWithTokenURI(address(this), 20, "happy");
+        uint256 ans = it.balanceOf(address(this));
+        Assert.equal(ans, 3, "value equal test");
+    }
+}
+```
+
+새로 Contract Code를 작성해서 내부에 Test할 Contract의 instance를 생성하고, 원하는 함수를 호출 후 Truffle Assert 함수로 Check하는 식입니다. <br/>
+
+현재 해당 코드를 작성 후 Truffle Console에서 Test 하 시에는 아래와 같이 입력합니다.
+
+```bashshell
+truffle(ganache)> test
+Using network 'ganache'.
+
+
+Compiling your contracts...
+===========================
+> Compiling ./test/TestSimpleStorage.sol
+
+    > compilation warnings encountered:
+
+/Users/kimdawoon/klaytn/contracts/NFTSimple.sol:40:2: Warning: Variable is shadowed in inline assembly by an instruction of the same name
+ function balance (address _addr) public view returns(uint){
+ ^ (Relevant source part starts here and spans across multiple lines).
+,/Users/kimdawoon/klaytn/contracts/NFTSimple.sol:140:30: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+    function onKIP17Received(address operator, address from , uint256 tokenId, bytes memory data) public returns (bytes4) {
+                             ^--------------^
+,/Users/kimdawoon/klaytn/contracts/NFTSimple.sol:140:80: Warning: Unused function parameter. Remove or comment out the variable name to silence this warning.
+    function onKIP17Received(address operator, address from , uint256 tokenId, bytes memory data) public returns (bytes4) {
+                                                                               ^---------------^
+
+
+TypeError [ERR_INVALID_REPL_INPUT]: Listeners for `uncaughtException` cannot be used in the REPL
+    at new NodeError (internal/errors.js:322:7)
+    at process.<anonymous> (repl.js:349:15)
+    at process.emit (events.js:412:35)
+    at process.emit (/usr/local/lib/node_modules/truffle/build/webpack:/~/source-map-support/source-map-support.js:465:1)
+    at _addListener (events.js:443:14)
+    at process.addListener (events.js:497:10)
+    at Runner.run (/usr/local/lib/node_modules/truffle/node_modules/mocha/lib/runner.js:868:11)
+    at Mocha.run (/usr/local/lib/node_modules/truffle/node_modules/mocha/lib/mocha.js:612:17)
+    at /usr/local/lib/node_modules/truffle/build/webpack:/packages/truffle-core/lib/test.js:116:1
+    at new Promise (<anonymous>)
+    at Object.run (/usr/local/lib/node_modules/truffle/build/webpack:/packages/truffle-core/lib/test.js:115:1)
+    at processTicksAndRejections (internal/process/task_queues.js:95:5)
+```
+
+현재 TypeErr가 나서 정상적으로 결과가 나오지는 않았습니다. <br/>
+해당 부분은 확인 후 수정 예정이므로 해당 과정만 참고 바랍니다.
