@@ -1,9 +1,12 @@
 //Klaytn IDE uses solidity 0.4.24 0.5.6 versions.
 pragma solidity >=0.4.24 <=0.5.6; 
 
+import './KIP17Token.sol';
+
 //bytes32 public empty = keccak256(bytes(""));
 
-contract DonationCampaign_update {
+contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
+
 
     struct Campaign {
         address campaign_creator_address; // 캠페인 만든 사람의 주소 - 이 주소로 기부금 보내짐  --> 환불 전까지는 스마트 컨트렉트 주소에 저장
@@ -25,6 +28,7 @@ contract DonationCampaign_update {
     Campaign[] public campaignList; // 구조체 Campaign을 저장하는 전체 배열 campaign_list
     mapping(uint256 => address[]) public userList;
     mapping(address => uint256[]) public userDonatedList;
+    uint256 tokenId = 0;
 
     // 캠페인 등록
     event CreatedCampaign(
@@ -58,10 +62,29 @@ contract DonationCampaign_update {
         campaignId[msg.sender].push(campaignList.length);
         // 배열에 새로운 캠페인를 삽입
         campaignList.push(newCampaign);
+
+        // NFT 발행
+        tokenId++;
+
+        _sendDonationNFT(tokenId, " ", _campaign_name, _campaign_description, _campaign_owener_name, _campaign_agency_url, "2022-02-21", "1");
+
+
         // 프론트 이벤트
         emit CreatedCampaign(_campaign_name, _campaign_description, _campaign_owener_name, _campaign_agency_url,  _target_amount);
     }
 
+    function _sendDonationNFT(
+        uint256 tokenId, 
+        string memory tokenURI,
+        string memory tokenName, 
+        string memory tokenDescription, 
+        string memory tokenOwnerName,
+        string memory tokenAgencyUrl,
+        string memory tokenDate,
+        string memory tokenNumber
+    ) private {
+        KIP17MetadataMintable.mintWithTokenURI(msg.sender, tokenId, tokenURI, tokenName, tokenDescription, tokenOwnerName, tokenAgencyUrl, tokenDate, tokenNumber);
+    } // NFT 발행 
     
 
     // 캠페인 존재여부 확인하는 함수
@@ -114,12 +137,18 @@ contract DonationCampaign_update {
         
         // 4. 캠페인에 현재 기부금액 업데이트
         campaignList[_campaignId].current_amount += _amount;
+
+
+        
         
         // 프론트 이벤트
         emit DonatedTocampaign(_campaignId, _amount);
     }
 
-    
+
+
+
+
 
     event SearchDonationList(uint256[] result);
 
@@ -140,10 +169,10 @@ contract DonationCampaign_update {
         return result;
     } // comapaign id check 
 
-    event SearchUserList(uint256[] result);
+    event SearchUserList(address[] result);
 
-    function UserListCheck(address campaign_address) public returns (uint256[] memory){
-        uint256[] memory result = userList[campaign_address];
+    function UserListCheck(uint256 Id) public returns (address[] memory){
+        address[] memory result = userList[Id];
 
         emit SearchUserList(result);
         return result;
