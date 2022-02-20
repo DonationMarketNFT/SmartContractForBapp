@@ -1,5 +1,5 @@
 //Klaytn IDE uses solidity 0.4.24 0.5.6 versions.
-pragma solidity >=0.4.24 <=0.5.6;
+pragma solidity >=0.4.24 <=0.5.6; 
 
 contract DonationMarket {
     string public name = "DonationMarket";
@@ -7,7 +7,23 @@ contract DonationMarket {
 
     mapping(uint256 => address) public tokenOwner;  
     mapping(uint256 => string) public tokenURIs;  
+/*
+    struct Campaign { // Campaign 생성 시, 관련 정보를 받아서 해당 구조체에서 관리 
+        string campaignName; // Campaign Name
+        string campaignDescription; // Campaign Information 
+        string campaignCreaterName; // Campaign 생성자 혹은 단체 이름
+        string campaignAgencyURL; // Campaign 단체 홈페이지 주소
+        address campaignAgencyAddress; // 모금 조건 완료 후 전송될 주소
+        uint256 campaignTargetAmount; // 모금 목표 금액
+        uint256 campaignTargetTiem; // 모금 목표 시간
+        bool campaignStatus;// 모금 상태 관리 (모금 중, 모금 종료)
+    }
 
+    struct Donator{
+        address donator_address; // 기부자 주소
+        uint256 donate_amount; // 기부 금액
+    }
+*/
     // 필요 함수 목록
 
     // 1. Mint 기능
