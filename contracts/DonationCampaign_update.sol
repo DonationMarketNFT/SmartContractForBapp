@@ -1,5 +1,6 @@
 //Klaytn IDE uses solidity 0.4.24 0.5.6 versions.
 pragma solidity >=0.4.24 <=0.5.6; 
+pragma experimental ABIEncoderV2;
 
 import './KIP17Token.sol';
 
@@ -63,15 +64,12 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         // 배열에 새로운 캠페인를 삽입
         campaignList.push(newCampaign);
 
-        // NFT 발행
-        tokenId++;
-
-        _sendDonationNFT(tokenId, " ", _campaign_name, _campaign_description, _campaign_owener_name, _campaign_agency_url, "2022-02-21", "1");
-
 
         // 프론트 이벤트
         emit CreatedCampaign(_campaign_name, _campaign_description, _campaign_owener_name, _campaign_agency_url,  _target_amount);
     }
+
+
 
     function _sendDonationNFT(
         uint256 tokenId, 
@@ -139,16 +137,15 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         campaignList[_campaignId].current_amount += _amount;
 
 
-        
+            // NFT 발행
+        tokenId++;
+
+        _sendDonationNFT(tokenId, " ", campaignList[_campaignId].campaign_name, campaignList[_campaignId].campaign_description, campaignList[_campaignId].campaign_owner_name, campaignList[_campaignId].campaign_agency_url, "2022-02-21", "1");
+
         
         // 프론트 이벤트
         emit DonatedTocampaign(_campaignId, _amount);
     }
-
-
-
-
-
 
     event SearchDonationList(uint256[] result);
 
@@ -160,12 +157,12 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         return result;
     }
 
-    event SearchComapaignId(uint256[] result);
+    event SearchCompaignId(uint256[] result);
 
-    function CaompaignIdCheck(address campaign_owner) public returns (uint256[] memory){
+    function CampaignIdCheck(address campaign_owner) public returns (uint256[] memory){
         uint256[] memory result = campaignId[campaign_owner];
 
-        emit SearchComapaignId(result);
+        emit SearchCompaignId(result);
         return result;
     } // comapaign id check 
 
@@ -176,6 +173,12 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
 
         emit SearchUserList(result);
         return result;
+    }
+
+    event SearchCampaignListCheck(Campaign[] campaignList);
+
+    function CampaignListCheck() public {
+        emit SearchCampaignListCheck(campaignList);
     }
 
 }
