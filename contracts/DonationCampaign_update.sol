@@ -18,6 +18,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         uint256 target_amount; // 목표 모금액
         uint256 current_amount; // 현재 모금액
         bool campaign_state;    // 캠페인 상태(모금중, 모금끝)
+        bool campaign_refund_state; // 캠페인 환불 상태 (환불 불가, 환불 가능)
         mapping(address => uint256) campaign_fundingAmountList; // 캠페인에 모금한 사람과 그 funding amount List
     }
 
@@ -61,7 +62,8 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
             campaign_agency_url : _campaign_agency_url,
             target_amount: _target_amount,
             current_amount: 0,
-            campaign_state : true
+            campaign_state : true,
+            campaign_refund_state : false 
         });
 
         // 새로운 캠페인 아이디 삽입
@@ -165,7 +167,18 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         emit DonatedTocampaign(_campaignId, _amount);
     }
 
+    function refundState(uint256 _campaignId) external view returns (bool) {
+        return campaignList[CampaignNumber].campaign_refund_state;
+    } // refund 상태 확인 
 
+    function setStateToRefund(uint256 _campaignId) public { // 환불 모드로 변경, 해당 캠페인 정지 -> 접근 권한 제한 필요 
+        campaignList[CampaignNumber].campaign_refund_state = true;
+        campaignList[CampaignNumber].campaign_state = false;
+    }
+
+    function refund(uint256 _campaignId, address _userAdd) external {
+        //address _to = payable(_msgSender());
+    }
 
     event SearchDonationList(uint256[] result);
 
