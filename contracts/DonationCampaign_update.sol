@@ -12,18 +12,11 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         address campaign_creator_address; // 캠페인 만든 사람의 주소 - 이 주소로 기부금 보내짐  --> 환불 전까지는 스마트 컨트렉트 주소에 저장
         string campaign_name; // 캠페인 이름
         string campaign_description; // 캠페인 내용
-        string campaign_owner_name; // 캠페인 생성자 혹은 단체 이름 
-        string campaign_agency_url; // 캠페인 단체 홈페이지 주소
         uint256 target_amount; // 목표 모금액
         uint256 current_amount; // 현재 모금액
         bool campaign_state;    // 캠페인 상태(모금중, 모금끝)
         bool campaign_refund_state; // 캠페인 환불 상태 (환불 불가, 환불 가능)
         mapping(address => uint256) campaign_fundingAmountList; // 캠페인에 모금한 사람과 그 funding amount List
-    }
-
-    struct Donator{
-        address donator_address; // 기부자 주소
-        uint256 donate_amount;    // 기부 금액
     }
 
     mapping(address => uint256[]) public campaignId; // 캠페인에 고유 숫자 부여. 해당 단체가 올린 캠페인 찾을 수 있음. 
@@ -33,22 +26,17 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
     uint public CampaignNumber = 0;
 
     uint256 tokenId = 0;
-    uint256 public MINTING_FEE = 300 * 10**18; // in pei
 
     // 캠페인 등록
     event CreatedCampaign(
         string _campaign_name,
         string _campaign_description,
-        string _campaign_owner_name,
-        string _campaign_agency_url,
         uint256 _target_amount
     );
 
     function createCampaign(
         string memory _campaign_name,
         string memory _campaign_description,
-        string memory _campaign_owener_name,
-        string memory _campaign_agency_url,
         uint256 _target_amount
     ) public {
 
@@ -57,8 +45,6 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
             campaign_creator_address: msg.sender,
             campaign_name: _campaign_name,
             campaign_description : _campaign_description,
-            campaign_owner_name : _campaign_owener_name,
-            campaign_agency_url : _campaign_agency_url,
             target_amount: _target_amount,
             current_amount: 0,
             campaign_state : true,
@@ -72,7 +58,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         CampaignNumber++;
 
         // 프론트 이벤트
-        emit CreatedCampaign(_campaign_name, _campaign_description, _campaign_owener_name, _campaign_agency_url,  _target_amount);
+        emit CreatedCampaign(_campaign_name, _campaign_description,  _target_amount);
     }
 
 
@@ -81,12 +67,10 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         string memory tokenURI,
         string memory tokenName, 
         string memory tokenDescription, 
-        string memory tokenOwnerName,
-        string memory tokenAgencyUrl,
         string memory tokenDate,
         string memory tokenNumber
     ) private returns (bool) {
-        KIP17MetadataMintable.mintWithTokenURI(msg.sender, tokenId, tokenURI, tokenName, tokenDescription, tokenOwnerName, tokenAgencyUrl, tokenDate, tokenNumber);
+        KIP17MetadataMintable.mintWithTokenURI(msg.sender, tokenId, tokenURI, tokenName, tokenDescription, "", "", tokenDate, tokenNumber);
         return true;
     } // NFT 발행 
     
@@ -117,9 +101,6 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
 
         address payable receiver = address(uint160(_receiver)); // to address is contract address // solidity issue 
         receiver.transfer(_amount); // smart contract 주소로 해당 금액 전송 // 보안 이슈 해결법은?  reentrant issue 
-
-
-        // 환불  - 강제 환불 기능 
         
         // 3. 유저 리스트에 유저 추가
         bool check = false;
@@ -130,6 +111,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
                 break;
             }
         }
+        
         if (!check) {
             userList[_campaignId].push(msg.sender); // contract에 기부한 user
             userDonatedList[msg.sender].push(_campaignId);
@@ -144,7 +126,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         tokenId++;
 
         require(
-        _sendDonationNFT(tokenId, " ", campaignList[_campaignId].campaign_name, campaignList[_campaignId].campaign_description, campaignList[_campaignId].campaign_owner_name, campaignList[_campaignId].campaign_agency_url, "2022-02-21", "1")
+        _sendDonationNFT(tokenId, " ", campaignList[_campaignId].campaign_name, campaignList[_campaignId].campaign_description, "2022-02-21", "1")
         ,"Donation NFT: minting failed");
         
         // 프론트 이벤트
@@ -152,36 +134,46 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
     }
 
     function refundState(uint256 _campaignId) external view returns (bool) {
-        return campaignList[CampaignNumber].campaign_refund_state;
+        return campaignList[_campaignId].campaign_refund_state;
     } // refund 상태 확인 
 
-    function setStateToRefund(uint256 _campaignId) public onlyMinter { // 환불 모드로 변경, 해당 캠페인 정지 -> 접근 권한 제한 필요 
-        campaignList[CampaignNumber].campaign_refund_state = true;
-        campaignList[CampaignNumber].campaign_state = false;
+    function setStateToRefund(uint256 _campaignId) external onlyMinter { // 환불 모드로 변경, 해당 캠페인 정지 -> 접근 권한 제한 필요 onlyMinter로 contract 생성자만 접근 가능 
+        campaignList[_campaignId].campaign_refund_state = true;
+        campaignList[_campaignId].campaign_state = false;
     }
 
-    function refund(uint256 _campaignId, address _userAdd) external {
-        //address _to = payable(_msgSender());
+    event Refunded(uint256 campaignId, address userAddr, uint256 refundAmount);
+
+    function refund(uint256 _campaignId, address _userAddr) external { // 환불 
+        require(campaignList[_campaignId].campaign_refund_state == true, "this campaign is not refund state");
+
+        require(campaignList[_campaignId].current_amount != 0, "all funds are returned");
+
+        require(campaignList[_campaignId].campaign_fundingAmountList[_userAddr] != 0, "your funds are refurned");
+        
+        address msgSender = msg.sender;
+        address payable _to = address(uint160(msgSender));
+
+        uint256 refundAmount = campaignList[_campaignId].campaign_fundingAmountList[_userAddr];
+
+        (bool success, ) = _to.call.value(refundAmount)("");  // refund 
+        require(success, "Failed to send coin");
+
+        campaignList[_campaignId].campaign_fundingAmountList[_userAddr] = 0;
+        campaignList[_campaignId].current_amount -= refundAmount;
+
+        emit Refunded(_campaignId, _userAddr, refundAmount);
     }
 
     event SearchDonationList(uint256[] result);
 
     function DonationList() external { // user의 Donation 현황을 조회 
-
         emit SearchDonationList(userDonatedList[msg.sender]);
     }
-
-    event SearchCompaignId(uint256[] result);
-
-    function CampaignIdCheck(address campaign_owner) external{
-
-        emit SearchCompaignId(campaignId[campaign_owner]);
-    } // comapaign id check 
 
     event SearchUserList(address[] result);
 
     function UserListCheck(uint256 Id) external {
-
         emit SearchUserList(userList[Id]);
     }
 
@@ -192,14 +184,12 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
     } // 생성된 총 Campaign Number 리턴 받기 
 
 
-    event SearchCampaignInformation(address , string, string, string, string, uint256, uint256 );
+    event SearchCampaignInformation(address , string, string, uint256, uint256 );
 
     function CampaignInformation(uint256 CampaignNumber) external {
         emit SearchCampaignInformation(campaignList[CampaignNumber].campaign_creator_address, 
         campaignList[CampaignNumber].campaign_name,
         campaignList[CampaignNumber].campaign_description,
-        campaignList[CampaignNumber].campaign_owner_name,
-        campaignList[CampaignNumber].campaign_agency_url,
         campaignList[CampaignNumber].target_amount,
         campaignList[CampaignNumber].current_amount 
         );
