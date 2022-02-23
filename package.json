@@ -9,7 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@openzeppelin/contracts": "^3.0.0",
     "caver-js": "^1.6.7",
-    "truffle": "^5.1.14-nodeLTS.0"
+    "truffle": "^5.1.14-nodeLTS.0",
+    "truffle-contract-size": "^2.0.1"
   }
 }
