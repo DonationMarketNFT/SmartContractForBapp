@@ -11,7 +11,9 @@
   "dependencies": {
     "@openzeppelin/contracts": "^3.0.0",
     "caver-js": "^1.6.7",
+    "dotenv": "^16.0.0",
     "truffle": "^5.1.14-nodeLTS.0",
-    "truffle-contract-size": "^2.0.1"
+    "truffle-contract-size": "^2.0.1",
+    "truffle-hdwallet-provider-klaytn": "^1.4.2"
   }
 }
