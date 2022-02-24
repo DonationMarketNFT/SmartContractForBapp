@@ -9,13 +9,14 @@ import './KIP17Token.sol';
 contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
 
     struct Campaign {
-        address campaign_creator_address; // 캠페인 만든 사람의 주소 - 이 주소로 기부금 보내짐  --> 환불 전까지는 스마트 컨트렉트 주소에 저장
+        address payable campaign_creator_address; // 캠페인 만든 사람의 주소 - 이 주소로 기부금 보내짐  --> 환불 전까지는 스마트 컨트렉트 주소에 저장
         string campaign_name; // 캠페인 이름
         string campaign_description; // 캠페인 내용
         uint256 target_amount; // 목표 모금액
         uint256 current_amount; // 현재 모금액
         bool campaign_state;    // 캠페인 상태(모금중, 모금끝)
         bool campaign_refund_state; // 캠페인 환불 상태 (환불 불가, 환불 가능)
+        uint256 campaignIndex;
         mapping(address => uint256) campaign_fundingAmountList; // 캠페인에 모금한 사람과 그 funding amount List
     }
 
@@ -24,6 +25,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
     mapping(uint256 => address[]) public userList;
     mapping(address => uint256[]) public userDonatedList;
     uint public CampaignNumber = 0;
+    uint256 contractBalance = 0;
 
     uint256 tokenId = 0;
 
@@ -48,6 +50,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
             target_amount: _target_amount,
             current_amount: 0,
             campaign_state : true,
+            campaignIndex : campaignList.length + 1,
             campaign_refund_state : false 
         });
 
@@ -85,7 +88,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
 
     event DonatedTocampaign(uint256 _campaignId, uint256 _amount);
 
-    function donateTocampaign(uint256 _campaignId, uint256 _amount) external payable {
+    function donateTocampaign(uint256 _campaignId, uint256 _amount) public payable {
 
         // 존재하는 캠페인인지 확인
         require(hasCampaign(_campaignId), "There is no campaign.");
@@ -96,12 +99,18 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         // 기부 금액이 실제 할당한 금액과 같은지
         require(msg.value == _amount, "you value is not equal to amount");
         
-        // 송금  - 
-        address _receiver = address(this);
+        // // 송금  - 
+        contractBalance += msg.value;
 
-        address payable receiver = address(uint160(_receiver)); // to address is contract address // solidity issue 
-        receiver.transfer(_amount); // smart contract 주소로 해당 금액 전송 // 보안 이슈 해결법은?  reentrant issue 
-        
+
+        // campaignList[_campaignId].campaign_creator_address.transfer(_amount);
+
+
+        //address _receiver = address(this);
+
+        //address payable receiver = address(uint160(_receiver)); // to address is contract address // solidity issue 
+        //receiver.transfer(_amount); // smart contract 주소로 해당 금액 전송 // 보안 이슈 해결법은?  reentrant issue 
+
         // 3. 유저 리스트에 유저 추가
         bool check = false;
         // 이미 배열에 있는지 확인
@@ -165,33 +174,33 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         emit Refunded(_campaignId, _userAddr, refundAmount);
     }
 
-    event SearchDonationList(uint256[] result);
+    // event SearchDonationList(uint256[] result);
 
-    function DonationList() external { // user의 Donation 현황을 조회 
-        emit SearchDonationList(userDonatedList[msg.sender]);
-    }
+    // function DonationList() external { // user의 Donation 현황을 조회 
+    //     emit SearchDonationList(userDonatedList[msg.sender]);
+    // }
 
-    event SearchUserList(address[] result);
+    // event SearchUserList(address[] result);
 
-    function UserListCheck(uint256 Id) external {
-        emit SearchUserList(userList[Id]);
-    }
+    // function UserListCheck(uint256 Id) external {
+    //     emit SearchUserList(userList[Id]);
+    // }
 
-    event SearchGegGampaignNumber(uint256 result);
+    // event SearchGegGampaignNumber(uint256 result);
 
-    function GetCampaignNumber() external{
-        emit SearchGegGampaignNumber(CampaignNumber);
-    } // 생성된 총 Campaign Number 리턴 받기 
+    // function GetCampaignNumber() external{
+    //     emit SearchGegGampaignNumber(CampaignNumber);
+    // } // 생성된 총 Campaign Number 리턴 받기 
 
 
-    event SearchCampaignInformation(address , string, string, uint256, uint256 );
+    // event SearchCampaignInformation(address , string, string, uint256, uint256 );
 
-    function CampaignInformation(uint256 CampaignNumber) external {
-        emit SearchCampaignInformation(campaignList[CampaignNumber].campaign_creator_address, 
-        campaignList[CampaignNumber].campaign_name,
-        campaignList[CampaignNumber].campaign_description,
-        campaignList[CampaignNumber].target_amount,
-        campaignList[CampaignNumber].current_amount 
-        );
-    } // Campaign 관련 정보 가져오기 
+    // function CampaignInformation(uint256 CampaignNumber) external {
+    //     emit SearchCampaignInformation(campaignList[CampaignNumber].campaign_creator_address, 
+    //     campaignList[CampaignNumber].campaign_name,
+    //     campaignList[CampaignNumber].campaign_description,
+    //     campaignList[CampaignNumber].target_amount,
+    //     campaignList[CampaignNumber].current_amount 
+    //     );
+    // } // Campaign 관련 정보 가져오기 
 }
