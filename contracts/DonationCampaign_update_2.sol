@@ -4,6 +4,8 @@ pragma experimental ABIEncoderV2;
 
 import './KIP17Token.sol';
 
+//bytes32 public empty = keccak256(bytes(""));
+
 contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
 
     struct Campaign {
@@ -22,6 +24,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
     mapping(uint256 => address[]) public userList;
     mapping(address => uint256[]) public userDonatedList;
     uint public CampaignNumber = 0;
+    uint256 contractBalance = 0;
 
     uint256 tokenId = 0;
 
@@ -83,7 +86,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
 
     event DonatedTocampaign(uint256 _campaignId, uint256 _amount);
 
-    function donateTocampaign(uint256 _campaignId, uint256 _amount) external payable {
+    function donateTocampaign(uint256 _campaignId, uint256 _amount) public payable {
 
         // 존재하는 캠페인인지 확인
         require(hasCampaign(_campaignId), "There is no campaign.");
@@ -94,10 +97,18 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         // 기부 금액이 실제 할당한 금액과 같은지
         require(msg.value == _amount, "you value is not equal to amount");
         
-        // 송금  - 
-        
-        campaignList[_campaignId].campaign_creator_address.transfer(_amount); // smart contract 주소로 해당 금액 전송 // 보안 이슈 해결법은?  reentrant issue 
-        
+        // // 송금  - 
+        contractBalance += msg.value;
+
+
+        // campaignList[_campaignId].campaign_creator_address.transfer(_amount);
+
+
+        //address _receiver = address(this);
+
+        //address payable receiver = address(uint160(_receiver)); // to address is contract address // solidity issue 
+        //receiver.transfer(_amount); // smart contract 주소로 해당 금액 전송 // 보안 이슈 해결법은?  reentrant issue 
+
         // 3. 유저 리스트에 유저 추가
         bool check = false;
         // 이미 배열에 있는지 확인
@@ -140,21 +151,20 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
 
     event Refunded(uint256 campaignId, address userAddr, uint256 refundAmount);
 
-    function refund(uint256 _campaignId, address payable _userAddr) payable external { // 환불 
+    function refund(uint256 _campaignId, address _userAddr) external { // 환불 
         require(campaignList[_campaignId].campaign_refund_state == true, "this campaign is not refund state");
 
         require(campaignList[_campaignId].current_amount != 0, "all funds are returned");
 
         require(campaignList[_campaignId].campaign_fundingAmountList[_userAddr] != 0, "your funds are refurned");
         
-        //address payable msgSender = msg.sender;
-        address payable _to = address(uint160(_userAddr));
+        address msgSender = msg.sender;
+        address payable _to = address(uint160(msgSender));
 
         uint256 refundAmount = campaignList[_campaignId].campaign_fundingAmountList[_userAddr];
 
-        // (bool success, ) = _to.call.value(refundAmount)("");  // refund 
-        // require(success, "Failed to send coin");
-        _to.transfer(refundAmount);
+        (bool success, ) = _to.call.value(refundAmount)("");  // refund 
+        require(success, "Failed to send coin");
 
         campaignList[_campaignId].campaign_fundingAmountList[_userAddr] = 0;
         campaignList[_campaignId].current_amount -= refundAmount;
