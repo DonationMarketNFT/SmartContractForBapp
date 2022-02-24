@@ -496,6 +496,9 @@ contract KIP17 is KIP13, IKIP17 {
     // Mapping from token ID to owner
     mapping(uint256 => address) private _tokenOwner;
 
+    // Mapping from owner to token ID array
+    mapping(address => uint256[]) private _tokenIdForOwner;
+
     // Mapping from token ID to approved address
     mapping(uint256 => address) private _tokenApprovals;
 
@@ -554,6 +557,13 @@ contract KIP17 is KIP13, IKIP17 {
 
         return owner;
     }
+
+    function tokenIds(address from) public view returns(uint256[] memory) {
+        require(_tokenIdForOwner[from].length >= 1, "this address havn't any tokens");
+
+        return _tokenIdForOwner[from];
+    }
+
 
     /**
      * @dev Approves another address to transfer the given token ID
@@ -727,6 +737,7 @@ contract KIP17 is KIP13, IKIP17 {
         require(!_exists(tokenId), "KIP17: token already minted");
 
         _tokenOwner[tokenId] = to;
+        _tokenIdForOwner[to].push(tokenId);
         _ownedTokensCount[to].increment();
 
         emit Transfer(address(0), to, tokenId);
@@ -1112,6 +1123,10 @@ contract IKIP17Metadata is IKIP17 {
     function symbol() external view returns (string memory);
 
     function tokenURI(uint256 tokenId) external view returns (string memory);
+
+    function tokenName(uint256 tokenId) external view returns (string memory);
+
+    function tokenDescription(uint256 tokenId) external view returns (string memory);
 }
 
 // File: contracts/token/KIP17/KIP17Metadata.sol
@@ -1182,6 +1197,22 @@ contract KIP17Metadata is KIP13, KIP17, IKIP17Metadata {
             "KIP17Metadata: URI query for nonexistent token"
         );
         return _tokenURIs[tokenId];
+    }
+
+    function tokenName(uint256 tokenId) external view returns (string memory){
+        require(
+            _exists(tokenId),
+            "KIP17Metadata: URI query for nonexistent token"
+        );
+        return _tokenName[tokenId];
+    }
+
+    function tokenDescription(uint256 tokenId) external view returns (string memory){
+        require(
+            _exists(tokenId),
+            "KIP17Metadata: URI query for nonexistent token"
+        );
+        return _tokenDescription[tokenId];
     }
 
     /**
