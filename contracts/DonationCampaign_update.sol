@@ -26,6 +26,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
     mapping(address => uint256[]) public userDonatedList;
     uint public CampaignNumber = 0;
     uint256 contractBalance = 0;
+    uint256 public MINTING_FEE = 10**18; // peb
 
     uint256 tokenId = 0;
 
@@ -97,7 +98,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         // 기부 금액이 0보다 커야함
         require(_amount > 0, "The amount of your donation must be greater than zero.");
         // 기부 금액이 실제 할당한 금액과 같은지
-        require(msg.value == _amount, "you value is not equal to amount");
+        require(msg.value == _amount * MINTING_FEE, "you value is not equal to amount");
         
         // // 송금  - 
         contractBalance += msg.value;
@@ -127,9 +128,9 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         }
         
         // 4. 캠페인에 현재 기부금액 업데이트
-        campaignList[_campaignId].current_amount += _amount;
+        campaignList[_campaignId].current_amount += _amount * MINTING_FEE;
 
-        campaignList[_campaignId].campaign_fundingAmountList[msg.sender] += _amount;
+        campaignList[_campaignId].campaign_fundingAmountList[msg.sender] += _amount * MINTING_FEE;
 
             // NFT 발행
         tokenId++;
@@ -139,14 +140,14 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         ,"Donation NFT: minting failed");
         
         // 프론트 이벤트
-        emit DonatedTocampaign(_campaignId, _amount);
+        emit DonatedTocampaign(_campaignId, _amount * MINTING_FEE);
     }
 
     function refundState(uint256 _campaignId) external view returns (bool) {
         return campaignList[_campaignId].campaign_refund_state;
     } // refund 상태 확인 
 
-    function setStateToRefund(uint256 _campaignId) external onlyMinter { // 환불 모드로 변경, 해당 캠페인 정지 -> 접근 권한 제한 필요 onlyMinter로 contract 생성자만 접근 가능 
+    function setStateToRefund(uint256 _campaignId) external { // 환불 모드로 변경, 해당 캠페인 정지 -> 접근 권한 제한 필요 onlyMinter로 contract 생성자만 접근 가능 
         campaignList[_campaignId].campaign_refund_state = true;
         campaignList[_campaignId].campaign_state = false;
     }
