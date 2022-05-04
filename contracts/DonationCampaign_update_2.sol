@@ -16,6 +16,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         uint256 current_amount; // 현재 모금액
         bool campaign_state;    // 캠페인 상태(모금중, 모금끝)
         bool campaign_refund_state; // 캠페인 환불 상태 (환불 불가, 환불 가능)
+        uint256 campaignIndex;
         mapping(address => uint256) campaign_fundingAmountList; // 캠페인에 모금한 사람과 그 funding amount List
     }
 
@@ -49,6 +50,7 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
             target_amount: _target_amount,
             current_amount: 0,
             campaign_state : true,
+            campaignIndex : campaignList.length + 1,
             campaign_refund_state : false 
         });
 
@@ -172,33 +174,33 @@ contract DonationCampaign_update is KIP17Token('DonationMarket','DM' ){
         emit Refunded(_campaignId, _userAddr, refundAmount);
     }
 
-    event SearchDonationList(uint256[] result);
+    // event SearchDonationList(uint256[] result);
 
-    function DonationList() external { // user의 Donation 현황을 조회 
-        emit SearchDonationList(userDonatedList[msg.sender]);
-    }
+    // function DonationList() external { // user의 Donation 현황을 조회 
+    //     emit SearchDonationList(userDonatedList[msg.sender]);
+    // }
 
-    event SearchUserList(address[] result);
+    // event SearchUserList(address[] result);
 
-    function UserListCheck(uint256 Id) external {
-        emit SearchUserList(userList[Id]);
-    }
+    // function UserListCheck(uint256 Id) external {
+    //     emit SearchUserList(userList[Id]);
+    // }
 
-    event SearchGegGampaignNumber(uint256 result);
+    // event SearchGegGampaignNumber(uint256 result);
 
-    function GetCampaignNumber() external{
-        emit SearchGegGampaignNumber(CampaignNumber);
-    } // 생성된 총 Campaign Number 리턴 받기 
+    // function GetCampaignNumber() external{
+    //     emit SearchGegGampaignNumber(CampaignNumber);
+    // } // 생성된 총 Campaign Number 리턴 받기 
 
 
-    event SearchCampaignInformation(address , string, string, uint256, uint256 );
+    // event SearchCampaignInformation(address , string, string, uint256, uint256 );
 
-    function CampaignInformation(uint256 CampaignNumber) external {
-        emit SearchCampaignInformation(campaignList[CampaignNumber].campaign_creator_address, 
-        campaignList[CampaignNumber].campaign_name,
-        campaignList[CampaignNumber].campaign_description,
-        campaignList[CampaignNumber].target_amount,
-        campaignList[CampaignNumber].current_amount 
-        );
-    } // Campaign 관련 정보 가져오기 
+    // function CampaignInformation(uint256 CampaignNumber) external {
+    //     emit SearchCampaignInformation(campaignList[CampaignNumber].campaign_creator_address, 
+    //     campaignList[CampaignNumber].campaign_name,
+    //     campaignList[CampaignNumber].campaign_description,
+    //     campaignList[CampaignNumber].target_amount,
+    //     campaignList[CampaignNumber].current_amount 
+    //     );
+    // } // Campaign 관련 정보 가져오기 
 }

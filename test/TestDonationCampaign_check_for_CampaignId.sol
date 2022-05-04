@@ -11,7 +11,7 @@ contract TestDonationCampaign_update_check_for_CampaignIdCheck{
 
         DonationCampaign_update it = new DonationCampaign_update();
 
-        it.createCampaign("test_campaign", "test_campaign_description", "test_campaign_owner", "test_campaign_url", 1000);
+        it.createCampaign("test_campaign", "test_campaign_description", 1000);
   
         uint256[] memory ans = it.CaompaignIdCheck(address(this));
         Assert.equal(ans[0], 0, "value equal test");
